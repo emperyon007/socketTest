@@ -49,7 +49,7 @@ public class Server {
                                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                                 System.out.println(timestamp.getTime());
                                 cmd = timestamp.getTime();
-                                out.println(cmd);
+                                out.println("TST::" + cmd);
                                 out.flush();
                             }
                         }
