@@ -2,49 +2,55 @@ package com.mycompany.sockettest;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 public class Client {
     public static void main(String args[]) throws IOException{
-        Socket socket = new Socket("127.0.0.1", 2000);
+        Socket cSocket;
+        BufferedReader in;
+        PrintWriter out;
+        Scanner sc = new Scanner(System.in);
         
-        try
-    {
-        BufferedReader sysRead = new BufferedReader(new InputStreamReader(System.in));
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-
-        String response = in.readLine();
-        System.out.println("Server: " + response);
-
-        boolean flag = true;
-        while (flag)
-        {
-            System.out.println("Type a command... type END to close the server");
-            String cmd = sysRead.readLine();
-            out.write(cmd + "\n");
-            out.flush();
-            if (cmd.equals("SYNC"))
-            {
-                BufferedReader pRead = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                
-                System.out.println(pRead);
-                
-                socket.close();
-                sysRead.close();
-                in.close();
-                out.close();
-                flag = false;
-            } else
-            {
-                String outputline;
-                while ((outputline = in.readLine()) != null)
-                    System.out.println(outputline);
-            }
+        try{
+            cSocket = new Socket("127.0.0.1", 2000);
+            out = new PrintWriter(cSocket.getOutputStream());
+            in = new BufferedReader(new InputStreamReader(cSocket.getInputStream()));
+            
+            Thread sender = new Thread(new Runnable() {
+                String msg;
+                @Override
+                public void run() {
+                    while(true){
+                        msg = sc.nextLine();
+                        out.println(msg);
+                        out.flush();
+                    }
+                }
+            });
+            sender.start();
+            
+            Thread receiver = new Thread(new Runnable() {
+                String msg;
+                @Override
+                public void run() {
+                    try{
+                        msg = in.readLine();
+                        while(msg != null){
+                            System.out.println("Server: " + msg);
+                            msg = in.readLine();
+                        }
+                        
+                        System.out.println("Server out of service");
+                        out.close();
+                    }
+                    catch(IOException e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+            receiver.start();
+        }catch (IOException e){
+            e.printStackTrace();
         }
-    }
-    catch (IOException ex)
-    {
-        ex.printStackTrace();
-    }
     }
 }
