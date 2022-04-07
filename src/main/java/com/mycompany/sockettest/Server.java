@@ -32,8 +32,10 @@ public class Server {
             });
             sender.start();
             
-            Thread receive = new Thread(new Runnable() {
+            Thread receive;
+            receive = new Thread(new Runnable() {
                 String msg;
+                long cmd;
                 @Override
                 public void run() {
                     try{
@@ -41,6 +43,15 @@ public class Server {
                         while(msg != null){  
                             System.out.println("Client: " + msg);
                             msg = in.readLine();
+                            
+                            if(msg.matches("SYNC")){
+                                System.out.println("T");
+                                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                                System.out.println(timestamp.getTime());
+                                cmd = timestamp.getTime();
+                                out.println(cmd);
+                                out.flush();
+                            }
                         }
                         
                         System.out.println("Client disconnected");
